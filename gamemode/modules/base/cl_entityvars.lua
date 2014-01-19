@@ -53,15 +53,23 @@ local function InitializeDarkRPVars(len)
 	A = A or {}
 	table.insert(A, vars)
 
-	if not vars then return end
-	for k,v in pairs(vars) do
-		if not IsValid(k) then print("DARKRPDEBUG", "PLAYER NOT VALID!", k, v) continue end
+	local askAgain = false
+	if not vars then askAgain = true print("DARKRPDEBUG", "VARS IS NIL!!!!!!!!!!!!!!!!!!") end
+	for k,v in pairs(vars or {}) do
+		if not IsValid(k) then print("DARKRPDEBUG", "PLAYER NOT VALID!", k, v) askAgain = true continue end
 		k.DarkRPVars = k.DarkRPVars or {}
 
 		-- Merge the tables
 		for a, b in pairs(v) do
 			k.DarkRPVars[a] = b
 		end
+	end
+
+	-- Sometimes players remain uninitialized
+	-- Ask again for data when null players are found or when not every player is in it
+	if askAgain or #vars < #player.GetAll() then -- Timer delay must be larger than 1, command will be ignored otherwise
+		print("DARKRPDEBUG", "RECEIVE DARKRPVARS FAILED, RE-REQUESTING!")
+		timer.Simple(3, fn.Curry(RunConsoleCommand, 2)("_sendDarkRPvars"))
 	end
 end
 net.Receive("DarkRP_InitializeVars", InitializeDarkRPVars)
